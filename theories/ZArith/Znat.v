@@ -721,6 +721,18 @@ Proof.
  now rewrite <- !nat_N_Z, Nat2N.inj_max, N2Z.inj_max.
 Qed.
 
+Lemma inj_div n m : Z.of_nat (n / m) = Z.of_nat n / Z.of_nat m.
+Proof.
+ destruct m as [|m]; [now destruct n|].
+ now rewrite <- !nat_N_Z, Nat2N.inj_div, N2Z.inj_div.
+Qed.
+
+Lemma inj_mod n m : Z.of_nat (n mod m) = (Z.of_nat n mod Z.of_nat m)%Z.
+Proof.
+ destruct m as [|m]; [now destruct n|].
+ now rewrite <- !nat_N_Z, Nat2N.inj_mod, N2Z.inj_mod.
+Qed.
+
 End Nat2Z.
 
 Module Z2Nat.
@@ -816,6 +828,18 @@ Qed.
 Lemma inj_max n m : Z.to_nat (Z.max n m) = Nat.max (Z.to_nat n) (Z.to_nat m).
 Proof.
  now rewrite <- !Z_N_nat, Z2N.inj_max, N2Nat.inj_max.
+Qed.
+
+Lemma inj_div n m : 0<=n -> 0<=m -> Z.to_nat (n / m) = (Z.to_nat n / Z.to_nat m)%nat.
+Proof.
+ intros. now rewrite <- !Z_N_nat, Z2N.inj_div, N2Nat.inj_div.
+Qed.
+
+Lemma inj_mod n m : 0<=n -> 0<m -> Z.to_nat (n mod m) = (Z.to_nat n mod Z.to_nat m)%nat.
+Proof.
+ intros. rewrite <- !Z_N_nat, Z2N.inj_mod; [|assumption|assumption].
+ rewrite N2Nat.inj_mod; [reflexivity|].
+ rewrite <- Z2N.inj_0. now intros ? %Z2N.inj; [subst|apply Z.lt_le_incl|].
 Qed.
 
 End Z2Nat.
@@ -988,6 +1012,8 @@ Notation inj_minus1 := Nat2Z.inj_sub (only parsing).
 Notation inj_minus := Nat2Z.inj_sub_max (only parsing).
 Notation inj_min := Nat2Z.inj_min (only parsing).
 Notation inj_max := Nat2Z.inj_max (only parsing).
+Notation inj_div := Nat2Z.inj_div (only parsing).
+Notation inj_mod := Nat2Z.inj_mod (only parsing).
 
 Notation Z_of_nat_of_P := positive_nat_Z (only parsing).
 Notation Zpos_eq_Z_of_nat_o_nat_of_P :=

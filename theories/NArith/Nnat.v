@@ -99,6 +99,26 @@ Proof.
  - apply Pos2Nat.inj_compare.
 Qed.
 
+Lemma inj_div n m :
+  N.to_nat (n / m) = N.to_nat n / N.to_nat m.
+Proof.
+  destruct m as [|m]; [now destruct n|].
+  apply Nat.div_unique with (N.to_nat (n mod (N.pos m))).
+  - apply Nat.compare_lt_iff. rewrite <- inj_compare.
+    now apply N.mod_lt.
+  - now rewrite <- inj_mul, <- inj_add, <- N.div_mod.
+Qed.
+
+Lemma inj_mod a a' :
+  (a' <> 0)%N -> N.to_nat (a mod a') = N.to_nat a mod N.to_nat a'.
+Proof.
+  destruct a' as [|a']; [easy|intros _].
+  apply Nat.mod_unique with (N.to_nat (a / (N.pos a'))).
+  - apply Nat.compare_lt_iff. rewrite <- inj_compare.
+    now apply N.mod_lt.
+  - now rewrite <- inj_mul, <- inj_add, <- N.div_mod.
+Qed.
+
 Lemma inj_max a a' :
   N.to_nat (N.max a a') = Nat.max (N.to_nat a) (N.to_nat a').
 Proof.
@@ -127,7 +147,8 @@ Qed.
 
 End N2Nat.
 
-Global Hint Rewrite N2Nat.inj_double N2Nat.inj_succ_double
+Global Hint Rewrite N2Nat.inj_div N2Nat.inj_mod
+ N2Nat.inj_double N2Nat.inj_succ_double
  N2Nat.inj_succ N2Nat.inj_add N2Nat.inj_mul N2Nat.inj_sub
  N2Nat.inj_pred N2Nat.inj_div2 N2Nat.inj_max N2Nat.inj_min
  N2Nat.id
@@ -192,6 +213,14 @@ Lemma inj_compare n n' :
   (n ?= n') = (N.of_nat n ?= N.of_nat n')%N.
 Proof. now rewrite N2Nat.inj_compare, !id. Qed.
 
+Lemma inj_div n n' :
+  N.of_nat (n / n') = (N.of_nat n / N.of_nat n')%N.
+Proof. nat2N. Qed.
+
+Lemma inj_mod n n' :
+  n' <> 0 -> N.of_nat (n mod n') = (N.of_nat n mod N.of_nat n')%N.
+Proof. destruct n' as [|n']; intros; nat2N. Qed.
+
 Lemma inj_min n n' :
   N.of_nat (Nat.min n n') = N.min (N.of_nat n) (N.of_nat n').
 Proof. nat2N. Qed.
@@ -221,6 +250,8 @@ Notation nat_of_Nminus := N2Nat.inj_sub (only parsing).
 Notation nat_of_Npred := N2Nat.inj_pred (only parsing).
 Notation nat_of_Ndiv2 := N2Nat.inj_div2 (only parsing).
 Notation nat_of_Ncompare := N2Nat.inj_compare (only parsing).
+Notation nat_of_Ndiv := N2Nat.inj_div (only parsing).
+Notation nat_of_Nmod := N2Nat.inj_mod (only parsing).
 Notation nat_of_Nmax := N2Nat.inj_max (only parsing).
 Notation nat_of_Nmin := N2Nat.inj_min (only parsing).
 
@@ -235,5 +266,7 @@ Notation N_of_minus := Nat2N.inj_sub (only parsing).
 Notation N_of_mult := Nat2N.inj_mul (only parsing).
 Notation N_of_div2 := Nat2N.inj_div2 (only parsing).
 Notation N_of_nat_compare := Nat2N.inj_compare (only parsing).
+Notation N_of_nat_div := Nat2N.inj_div (only parsing).
+Notation N_of_nat_mod := Nat2N.inj_mod (only parsing).
 Notation N_of_min := Nat2N.inj_min (only parsing).
 Notation N_of_max := Nat2N.inj_max (only parsing).
