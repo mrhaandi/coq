@@ -715,26 +715,12 @@ Arguments Zdiv_eucl_extended : default implicits.
 
 (** * Division and modulo in Z agree with same in nat: *)
 
-Require Import PeanoNat.
-
+(* deprecated since "8.14", "Use Nat2Z.inj_div instead." *)
 Lemma div_Zdiv (n m: nat): m <> O ->
   Z.of_nat (n / m) = Z.of_nat n / Z.of_nat m.
-Proof.
- intros.
- apply (Zdiv_unique _ _ _ (Z.of_nat (n mod m))).
-  split. auto with zarith.
-  now apply inj_lt, Nat.mod_upper_bound.
- rewrite <- Nat2Z.inj_mul, <- Nat2Z.inj_add.
- now apply inj_eq, Nat.div_mod.
-Qed.
+Proof. intros. apply Nat2Z.inj_div. Qed.
 
+(* deprecated since "8.14", "Use Nat2Z.inj_mod instead." *)
 Lemma mod_Zmod (n m: nat): m <> O ->
   Z.of_nat (n mod m) = (Z.of_nat n) mod (Z.of_nat m).
-Proof.
- intros.
- apply (Zmod_unique _ _ (Z.of_nat n / Z.of_nat m)).
-  split. auto with zarith.
-  now apply inj_lt, Nat.mod_upper_bound.
- rewrite <- div_Zdiv, <- Nat2Z.inj_mul, <- Nat2Z.inj_add by trivial.
- now apply inj_eq, Nat.div_mod.
-Qed.
+Proof. intros. apply Nat2Z.inj_mod. Qed.

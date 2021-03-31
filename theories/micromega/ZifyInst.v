@@ -100,6 +100,14 @@ Instance Op_Z_abs_nat : UnOp  Z.abs_nat :=
   { TUOp := Z.abs ; TUOpInj := Zabs2Nat.id_abs }.
 Add Zify UnOp Op_Z_abs_nat.
 
+Instance Op_mod : BinOp Nat.modulo :=
+  {| TBOp := Z.modulo ; TBOpInj := Nat2Z.inj_mod |}.
+Add Zify BinOp Op_mod.
+
+Instance Op_div : BinOp Nat.div :=
+  {| TBOp := Z.div ; TBOpInj := Nat2Z.inj_div |}.
+Add Zify BinOp Op_div.
+
 (** Support for positive *)
 
 Instance Inj_pos_Z : InjTyp positive Z :=
