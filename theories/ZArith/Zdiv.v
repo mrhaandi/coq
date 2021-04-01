@@ -238,6 +238,20 @@ Proof.
   intros; apply Z.le_ge, Z_div_pos; auto using Z.ge_le.
 Qed.
 
+(* Division of non-negative numbers is non-negative. *)
+
+Lemma Z_div_nonneg_nonneg : forall a b, 0 <= a -> 0 <= b -> 0 <= a / b.
+Proof.
+  intros a b. destruct b; intros; now (rewrite Zdiv_0_r + apply Z_div_pos).
+Qed.
+
+(* Modulo for a non-negative divisor is non-negative. *)
+
+Lemma Z_mod_nonneg_nonneg : forall a b, 0 <= b -> 0 <= a mod b.
+Proof.
+  intros a b. destruct b; intros; now (rewrite Zmod_0_r + apply Z_mod_lt).
+Qed.
+
 (** As soon as the divisor is greater or equal than 2,
     the division is strictly decreasing. *)
 

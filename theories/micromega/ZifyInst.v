@@ -12,7 +12,7 @@
    Each instance is registered using a Add 'class' 'name_of_instance'.
  *)
 
-Require Import Arith Max Min BinInt BinNat Znat Nnat.
+Require Import Max Min BinInt BinNat Znat Nnat Zdiv.
 Require Import ZifyClasses.
 Declare ML Module "zify_plugin".
 Local Open Scope Z_scope.
@@ -506,3 +506,21 @@ Instance SatPowPos : Saturate Z.pow :=
     SatOk := pow_pos_strict
   |}.
 Add Zify Saturate SatPowPos.
+
+Instance SatDiv : Saturate Z.div :=
+  {|
+    PArg1 := fun x => 0 <= x;
+    PArg2 := fun y => 0 <= y;
+    PRes  := fun r => 0 <= r;
+    SatOk := Z_div_nonneg_nonneg
+  |}%Z.
+Add Zify Saturate SatDiv.
+
+Instance SatMod : Saturate Z.modulo :=
+  {|
+    PArg1 := fun x => True;
+    PArg2 := fun y => 0 <= y;
+    PRes  := fun r => 0 <= r;
+    SatOk := fun a b _ => Z_mod_nonneg_nonneg a b
+  |}%Z.
+Add Zify Saturate SatMod.
