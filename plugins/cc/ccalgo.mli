@@ -27,7 +27,7 @@ module PacMap : CSig.MapS with type key = pa_constructor
 type cinfo =
     {ci_constr: pconstructor; (* inductive type *)
      ci_arity: int;     (* # args *)
-     ci_nhyps: int}     (* # projectable args *)
+     ci_hyps: bool list}     (* # projectable args *)
 
 type 'a term
 

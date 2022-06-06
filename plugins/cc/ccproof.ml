@@ -105,7 +105,7 @@ and edge_proof env sigma uf ((i,j),eq)=
     | Injection (ti,ipac,tj,jpac,k) -> (* pi_k ipac = p_k jpac *)
       let p=ind_proof env sigma uf ti ipac tj jpac in
       let cinfo= get_constructor_info uf ipac.cnode in
-      pinject p cinfo.ci_constr cinfo.ci_nhyps k in
+      pinject p cinfo.ci_constr (List.length cinfo.ci_hyps) k in
   ptrans (ptrans pi pij) pj
 
 and constr_proof env sigma uf i ipac=

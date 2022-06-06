@@ -51,6 +51,54 @@ let whd_in_concl =
 (** FIXME: evar leak *)
 let sf_of env sigma c = snd (sort_of env sigma c)
 
+(*
+let build_projection intype (cstr:pconstructor) special default gls=
+  let open Tacmach in
+  let ci= (snd(fst cstr)) in
+  let sigma = project gls in
+  let body=Equality.build_selector (pf_env gls) sigma ci (mkRel 1) intype special default in
+  let id=pf_get_new_id (Id.of_string "t") gls in
+  sigma, mkLambda(make_annot (Name id) Sorts.Relevant,intype,body)
+  
+let constr_of_term c = EConstr.of_constr (ATerm.constr c)
+Constructor cinfo -> mkConstructU cinfo.ci_constr
+
+let type_and_refresh c k =
+  Proofview.Goal.enter begin fun gl ->
+    let env = Proofview.Goal.env gl in
+    let evm = Tacmach.project gl in
+    (* XXX is get_type_of enough? *)
+    let evm, ty = Typing.type_of env evm c in
+    let evm, ty = refresh_type env evm ty in
+    Proofview.tclTHEN (Proofview.Unsafe.tclEVARS evm) (k ty)
+  end
+  
+| Inject (prf,cstr,nargs,argind) ->
+         let ti=constr_of_term prf.p_lhs in
+         let tj=constr_of_term prf.p_rhs in
+         let default=constr_of_term p.p_lhs in
+         let special=mkRel (1+nargs-argind) in
+         type_and_refresh ti (fun intype ->
+         type_and_refresh default (fun outtype ->
+         let sigma, proj =
+           build_projection intype cstr special default gl
+         in
+         let injt=
+           app_global_with_holes _f_equal [|intype;outtype;proj;ti;tj|] 1 in
+         Tacticals.tclTHEN (Proofview.Unsafe.tclEVARS sigma)
+                               (Tacticals.tclTHEN injt (proof_tac prf))))
+  
+*)
+let well_typed_proj env sigma c i =
+  let tm= mkConstructU c in
+  let default=constr_of_term p.p_lhs in (* TODO this needs to be an input variable and also mklambda then *)
+  let special=mkRel (1+i) in (*this is maybe reversed*)
+  type_and_refresh ti (fun intype ->
+  let sigma, proj =
+           build_projection intype cstr special default gl
+         in
+  true
+
 let rec decompose_term env sigma t =
     match EConstr.kind sigma (whd env sigma t) with
       App (f,args)->
@@ -71,9 +119,10 @@ let rec decompose_term env sigma t =
         let canon_ind = canon_mind,i_ind in
         let (oib,_)=Global.lookup_inductive (canon_ind) in
         let nargs=constructor_nallargs env (canon_ind,i_con) in
+        let c'=((canon_ind,i_con),u) in
           ATerm.mkConstructor {ci_constr= ((canon_ind,i_con),u);
                        ci_arity=nargs;
-                       ci_nhyps=nargs-oib.mind_nparams}
+                       ci_hyps=List.init (nargs-oib.mind_nparams) (well_typed_proj env sigma c')}
     | Ind c ->
         let (mind,i_ind),u = c in
         let u = EInstance.kind sigma u in
@@ -443,6 +492,7 @@ let build_term_to_complete uf pac =
 
 let cc_tactic depth additional_terms b =
   Proofview.Goal.enter begin fun gl ->
+    Printf.printf "I'm in congruence: %fs\n" (Sys.time());
     let sigma = Tacmach.project gl in
     Coqlib.(check_required_library logic_module_name);
     let _ = debug_congruence (fun () -> Pp.str "Reading goal ...") in

@@ -114,7 +114,7 @@ module PafMap=Map.Make(PafOrd)
 type cinfo=
     {ci_constr: pconstructor; (* inductive type *)
      ci_arity: int;     (* # args *)
-     ci_nhyps: int}     (* # projectable args *)
+     ci_hyps: bool list}     (* # projectable args *)
 
 let family_eq f1 f2 = match f1, f2 with
   | Set, Set
@@ -161,9 +161,9 @@ struct
       | Product (s1, t1), Product (s2, t2) -> family_eq s1 s2 && family_eq t1 t2
       | Eps i1, Eps i2 -> Id.equal i1 i2
       | Appli (t1', u1'), Appli (t2', u2') -> term_equal t1'.term t2'.term && term_equal u1'.term u2'.term
-      | Constructor {ci_constr=(c1,u1); ci_arity=i1; ci_nhyps=j1},
-        Constructor {ci_constr=(c2,u2); ci_arity=i2; ci_nhyps=j2} ->
-          Int.equal i1 i2 && Int.equal j1 j2 && Construct.CanOrd.equal c1 c2 (* FIXME check eq? *)
+      | Constructor {ci_constr=(c1,u1); ci_arity=i1; ci_hyps=j1},
+        Constructor {ci_constr=(c2,u2); ci_arity=i2; ci_hyps=j2} ->
+          Int.equal i1 i2 && List.equal Bool.equal j1 j2 && Construct.CanOrd.equal c1 c2 (* FIXME check eq? *)
       | _ -> false
 
   let equal t1 t2 = term_equal t1.term t2.term
@@ -176,7 +176,7 @@ struct
     | Product (s1, s2) -> combine3 2 (Sorts.hash s1) (Sorts.hash s2)
     | Eps i -> combine 3 (Id.hash i)
     | Appli (t1', t2') -> combine3 4 (t1'.hash) (t2'.hash)
-    | Constructor {ci_constr=(c,u); ci_arity=i; ci_nhyps=j} -> combine4 5 (Construct.CanOrd.hash c) i j
+    | Constructor {ci_constr=(c,u); ci_arity=i; ci_hyps=j} -> combine4 5 (Construct.CanOrd.hash c) i (List.length j)
 
   let hash t = t.hash
 
@@ -770,17 +770,19 @@ let process_constructor_mark t i rep pac state =
             raise (Discriminable (s,opac,t,pac))
           else (* Match *)
             let cinfo = get_constructor_info state.uf pac.cnode in
-            let rec f n oargs args=
-              if n > 0 then
-                match (oargs,args) with
-                    s1::q1,s2::q2->
+            let rec f ns oargs args=
+                match (ns,oargs,args) with
+                    true::ns',s1::q1,s2::q2->
                       Queue.add
-                        {lhs=s1;rhs=s2;rule=Injection(s,opac,t,pac,n)}
+                        {lhs=s1;rhs=s2;rule=Injection(s,opac,t,pac,List.length ns)}
                         state.combine;
-                      f (n-1) q1 q2
+                      f ns' q1 q2
+                  | false::ns',_::q1,_::q2->
+                      f ns' q1 q2
+                  | [],_,_ -> () (* what is actualy about [], _::_, _::_ ? *)
                   | _-> anomaly ~label:"add_pacs"
                       (Pp.str "weird error in injection subterms merge.")
-            in f cinfo.ci_nhyps opac.args pac.args
+            in f cinfo.ci_hyps opac.args pac.args
       | Partial_applied | Partial _ ->
 (*	  add_pac state.uf.map.(i) pac t; *)
           state.terms<-Int.Set.union rep.lfathers state.terms
