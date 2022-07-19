@@ -394,20 +394,6 @@ let possible_resolve env sigma dbg db_list local_db secvars cl =
         (my_find_search env sigma db_list local_db secvars head cl)
   with Not_found -> []
 
-(* Introduce an hypothesis, then call the continuation tactic [kont]
-   with the hint db extended with the so-obtained hypothesis *)
-
-let intro_register dbg kont db =
-  Tacticals.tclTHEN (dbg_intro dbg)
-    (Proofview.Goal.enter begin fun gl ->
-      let extend_local_db decl db =
-        let env = Tacmach.pf_env gl in
-        let sigma = Tacmach.project gl in
-        push_resolve_hyp env sigma (Context.Named.Declaration.get_id decl) db
-      in
-      Tacticals.onLastDecl (fun decl -> kont (extend_local_db decl db))
-    end)
-
 (* n is the max depth of search *)
 (* local_db contains the local Hypotheses *)
 
@@ -421,8 +407,16 @@ let search d n db_list local_db lems =
         Tacticals.tclZEROMSG ~info (str"BOUND 2")
       else
         Tacticals.tclORELSE0 (dbg_assumption d)
-          (Tacticals.tclORELSE0 (intro_register d (search d n) local_db)
-             ( Proofview.Goal.enter begin fun gl ->
+          (Proofview.tclIFCATCH (dbg_intro d)
+            (fun () -> Proofview.Goal.enter begin fun gl ->
+              let extend_local_db decl db =
+                let env = Proofview.Goal.env gl in
+                let sigma = Proofview.Goal.sigma gl in
+                push_resolve_hyp env sigma (Context.Named.Declaration.get_id decl) db
+              in
+              Tacticals.onLastDecl (fun decl -> search d n (extend_local_db decl local_db))
+            end)
+             (fun _ -> Proofview.Goal.enter begin fun gl ->
                let concl = Proofview.Goal.concl gl in
                let sigma = Proofview.Goal.sigma gl in
                let env = Proofview.Goal.env gl in
