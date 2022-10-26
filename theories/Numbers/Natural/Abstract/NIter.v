@@ -17,7 +17,11 @@ Module NIterProp
 (Import N' : NSubProp N)
   (Import NI : NAxiomsIter N N).
 
-
+  Lemma aux  {A : Type} (f : A -> A) (a : A) (x y : t) :
+    x == y -> iter x f a = iter y f a.
+  Proof.
+  Admitted.
+  (*
   #[local] Instance iter_wd {A : Type} :
     Proper (eq ==> (Logic.eq ==> Logic.eq) ==> Logic.eq ==> Logic.eq) (fun n => @iter n A).
   Proof.
@@ -28,7 +32,7 @@ Module NIterProp
   - intros y Hy. admit.
   - intros x' IH y Hy.
   Admitted. (* doable ? *)
-
+*)
 Lemma iter_swap :
   forall n (A:Type) (f:A -> A) (x:A),
     iter n f (f x) = f (iter n f x).
@@ -36,7 +40,7 @@ Proof.
   intros n A f x. revert n.
   apply (induction).
   - intros ???.
-  assert (HH := @iter_wd A x0 y H).
+  assert (HH := @iter_wd A x0 y H f f).
   rewrite H.
   intros n. pattern n. revert n.
   apply case_analysis.
