@@ -18,87 +18,26 @@ Module NIterProp
   (Import NI : NAxiomsIter N N).
 
 
-  #[local] Instance iter_wd2 {A : Type} :
-  Proper (eq ==> (Logic.eq ==> Logic.eq) ==> Logic.eq ==> Logic.eq) (fun n => @iter n A).
-Proof.
+  #[local] Instance iter_wd {A : Type} :
+    Proper (eq ==> (Logic.eq ==> Logic.eq) ==> Logic.eq ==> Logic.eq) (fun n => @iter n A).
+  Proof.
   intros ?????????. subst.
   revert y H. pattern x.
-  apply (measure_induction _ id).
-  Search (N.eq _ 0).
-
-
-  apply induction.
-  - intros ???. split.
-    + intros ???.
-      assert (x0 == y2). now transitivity y.
-      assert (HH1 := H0 y2 H2).
-      assert (HH2 := H0 y H).
-      rewrite <- HH1.
-      rewrite <- HH2.
-      reflexivity.
-    + intros ???. admit. (* easy *)
-  - intros ? Hy.
-
-
-    intros x y.
-    admit. (* by case on y *)
-  - Print NAxiomsSig'.
-    destruct asd.
-    apply H0.
-
-(*
-#[global]
-Declare Instance iter_wd {A : Type} :
- Proper (eq ==> (Logic.eq==>Logic.eq) ==> Logic.eq ==> Logic.eq) (fun n => @iter n A).
-*)
-(*
-#[local] Instance iter_wd {A : Type} (f : A -> A) (a : A) :
-  Proper (eq ==> iff)
-    (fun x => forall y, x == y -> iter x f a = iter y f a).
-Proof.
-  intros ???.
-Admitted.
-
-#[local] Instance iter_wd2 {A : Type} :
-  Proper (eq ==> Logic.eq ==> Logic.eq ==> Logic.eq) (fun n => @iter n A).
-Proof.
-  intros ?????????. subst.
-  revert y H. pattern x.
-
-
-  apply induction.
-  - intros ???. split.
-    + intros ???.
-      assert (x0 == y2). now transitivity y.
-      assert (HH1 := H0 y2 H2).
-      assert (HH2 := H0 y H).
-      rewrite <- HH1.
-      rewrite <- HH2.
-      reflexivity.
-    + intros ???. admit. (* easy *)
-  - intros ? Hy.
-
-
-    intros x y.
-    admit. (* by case on y *)
-  - Print NAxiomsSig'.
-    destruct asd.
-    apply H0.
-
-
-    rewrite (iter_0 _ y0 y1).
-    rewrite <- Hy.
-    admit.
-  - intros n. split.
-    + 
-*)
+  apply (induction).
+  - admit.
+  - intros y Hy. admit.
+  - intros x' IH y Hy.
+  Admitted. (* doable ? *)
 
 Lemma iter_swap :
   forall n (A:Type) (f:A -> A) (x:A),
     iter n f (f x) = f (iter n f x).
 Proof.
   intros n A f x. revert n.
-  apply (measure_induction _ id).
+  apply (induction).
+  - intros ???.
+  assert (HH := @iter_wd A x0 y H).
+  rewrite H.
   intros n. pattern n. revert n.
   apply case_analysis.
   - intros ???. split.
