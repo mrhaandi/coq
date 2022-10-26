@@ -30,17 +30,27 @@ Module Type NDivSpecific (Import N : NAxiomsMiniSig')(Import DM : DivMod' N).
  Axiom mod_upper_bound : forall a b, b ~= 0 -> a mod b < b.
 End NDivSpecific.
 
+Module Type NAxiomsIter (Import E:Eq')(Import NZ:ZeroSuccPred' E).
+
+Parameter Inline iter : t -> forall {A : Type}, (A -> A) -> A -> A.
+
+Axiom iter_0 : forall (A:Type) (f:A -> A) (x:A), iter 0 f x = x.
+
+Axiom iter_succ : forall n (A:Type) (f:A -> A) (x:A), iter (S n) f x = f (iter n f x).
+
+End NAxiomsIter.
+
 (** For all other functions, the NZ axiomatizations are enough. *)
 
 (** We now group everything together. *)
 
 Module Type NAxiomsSig := NAxiomsMiniSig <+ OrderFunctions
   <+ NZParity.NZParity <+ NZPow.NZPow <+ NZSqrt.NZSqrt <+ NZLog.NZLog2
-  <+ NZGcd.NZGcd <+ NZDiv.NZDiv <+ NZBits.NZBits <+ NZSquare.
+  <+ NZGcd.NZGcd <+ NZDiv.NZDiv <+ NZBits.NZBits <+ NZSquare <+ NAxiomsIter.
 
 Module Type NAxiomsSig' := NAxiomsMiniSig' <+ OrderFunctions'
   <+ NZParity.NZParity <+ NZPow.NZPow' <+ NZSqrt.NZSqrt' <+ NZLog.NZLog2
-  <+ NZGcd.NZGcd' <+ NZDiv.NZDiv' <+ NZBits.NZBits' <+ NZSquare.
+  <+ NZGcd.NZGcd' <+ NZDiv.NZDiv' <+ NZBits.NZBits' <+ NZSquare <+ NAxiomsIter.
 
 
 (** It could also be interesting to have a constructive recursor function. *)

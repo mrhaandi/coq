@@ -485,6 +485,14 @@ Qed.
 Lemma log2_nonpos n : n<=0 -> log2 n = 0.
 Proof. inversion 1; now subst. Qed.
 
+(** ** Iteration *)
+
+Lemma iter_0 : forall (A:Type) (f:A -> A) (x:A), iter 0 f x = x.
+Proof. reflexivity. Qed.
+
+Lemma iter_succ : forall n (A:Type) (f:A -> A) (x:A), iter (succ n) f x = f (iter n f x).
+Proof. reflexivity. Qed.
+
 (** ** Gcd *)
 
 Definition divide x y := exists z, y=z*x.
