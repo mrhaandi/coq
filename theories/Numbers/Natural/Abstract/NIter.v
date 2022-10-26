@@ -17,9 +17,62 @@ Module NIterProp
 (Import N' : NSubProp N)
   (Import NI : NAxiomsIter N N).
 
+
+  Lemma mymy {A : Type} (f : A -> A) (a : A) :
+    Proper (eq ==> iff)
+      (fun x => forall y, x == y -> iter x f a = iter y f a).
+  Proof.
+    intros x y Hxy. split.
+    - intros H' z Hyz.
+      assert (Hxz : x == z) by now transitivity y.
+      now rewrite <- (H' _ Hxy), <- (H' _ Hxz).
+    - intros H' z Hxz.
+      assert (Hyx : y == x) by now symmetry.
+      assert (Hyz : y == z) by now rewrite Hyx.
+      now rewrite <- (H' _ Hyx), <- (H' _ Hyz).
+  Qed.
+
+  (*
+
+  #[local] Instance iter_wd {A : Type} :
+  Proper (eq ==> (Logic.eq ==> Logic.eq) ==> Logic.eq ==> Logic.eq) (fun n => @iter n A).
+Proof.
+intros ?????????. subst.
+revert y H. pattern x.
+apply (induction).
+- admit.
+- intros y Hy. admit.
+- intros x' IH y Hy.
+Admitted. (* doable ? *)
+*)
+  Lemma aux0  {A : Type} {f : A -> A} {a : A} {x : t} :
+    x == 0 -> iter x f a = a.
+  Proof.
+    pattern x. apply (induction).
+    - intros ???. split.
+      + intros IH .
+    clear x. intros x IH Hx.
+    destruct ()
+    zero_or_succ
+  Admitted.
+
+*)
+
+(*
+maybe this is not provable as is?
+*)
   Lemma aux  {A : Type} {f : A -> A} {a : A} {x y : t} :
     x == y -> iter x f a = iter y f a.
   Proof.
+    revert y. pattern x.
+    apply (induction).
+    - apply mymy.
+    - intros y Hy.
+      assert (HH := mymy f a 0 y Hy).
+      cbn in HH.
+    clear x. intros x IH y Hxy.
+    destruct ()
+    zero_or_succ
   Admitted.
   (*
   #[local] Instance iter_wd {A : Type} :
@@ -33,6 +86,7 @@ Module NIterProp
   - intros x' IH y Hy.
   Admitted. (* doable ? *)
 *)
+
 Lemma iter_swap :
   forall n (A:Type) (f:A -> A) (x:A),
     iter n f (f x) = f (iter n f x).
@@ -40,24 +94,8 @@ Proof.
   intros n A f x. revert n.
   apply (induction).
   - intros ???. now rewrite !(aux H).
-  assert (HH := @iter_wd A x0 y H f f).
-  rewrite H.
-  intros n. pattern n. revert n.
-  apply case_analysis.
-  - intros ???. split.
-    + intros ??. admit.
-  - intros IH. rewrite !iter_0. reflexivity.
-  - intros n IH. rewrite !iter_succ, IH; [reflexivity|].
-    apply lt_succ_diag_r.
-
-    Search (_ < S _).
-  intros n IH. revert n.
-
-  - intros ???. rewrite H. cbn.
-  Print NAxiomsSig'.
-  induction n.
-
- intros. symmetry. now apply iter_swap_gen.
+  - now rewrite !iter_0.
+  - intros ? H. now rewrite !iter_succ, H.
 Qed.
 
 Lemma div_0_l : forall a, 0/a == 0.
