@@ -17,7 +17,7 @@ Module NIterProp
 (Import N' : NSubProp N)
   (Import NI : NAxiomsIter N N).
 
-  Lemma aux  {A : Type} (f : A -> A) (a : A) (x y : t) :
+  Lemma aux  {A : Type} {f : A -> A} {a : A} {x y : t} :
     x == y -> iter x f a = iter y f a.
   Proof.
   Admitted.
@@ -39,7 +39,7 @@ Lemma iter_swap :
 Proof.
   intros n A f x. revert n.
   apply (induction).
-  - intros ???.
+  - intros ???. now rewrite !(aux H).
   assert (HH := @iter_wd A x0 y H f f).
   rewrite H.
   intros n. pattern n. revert n.
